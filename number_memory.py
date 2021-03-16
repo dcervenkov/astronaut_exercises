@@ -33,6 +33,7 @@ class MyThread(threading.Thread):
         self.do_run = True
 
     def run(self):
+        time.sleep(0.01)
         i = 0
         i100 = 0
         while self.do_run:
@@ -126,6 +127,7 @@ def compare_sequences(orig, user):
         print("Correct")
         input("Press Enter to continue")
     else:
+        max_len = max(len(orig), len(user))
         print(f"True: {orig}")
         print("User: [", end="")
         for i, number in enumerate(orig):
@@ -138,7 +140,7 @@ def compare_sequences(orig, user):
                 print(number, end="")
             else:
                 print(bcolors.FAIL + str(user_number) + bcolors.ENDC, end="")
-            if i < len(user) - 1:
+            if i < max_len - 1:
                 print(", ", end="")
         if len(user) > len(orig):
             for i in range(len(orig), len(user)):
