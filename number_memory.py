@@ -91,19 +91,6 @@ def stderr_redirected(to=os.devnull):
             _redirect_stderr(to=old_stderr)  # restore stdout.
 
 
-class TimeoutExpired(Exception):
-    pass
-
-
-def input_with_timeout(prompt, timeout):
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-    ready, _, _ = select.select([sys.stdin], [], [], timeout)
-    if ready:
-        return sys.stdin.readline().rstrip("\n")  # expect stdin to be line-buffered
-    raise TimeoutExpired
-
-
 def generate_sequences(number, length, min_num, max_num):
     sequences = []
     for _ in range(number):
@@ -126,6 +113,7 @@ def compare_sequences(orig, user):
     if orig == user:
         print("Correct")
         input("Press Enter to continue")
+        print("\033[A                             \033[A")
     else:
         max_len = max(len(orig), len(user))
         print(f"True: {orig}")
@@ -153,6 +141,8 @@ def compare_sequences(orig, user):
                     print(", ", end="")
         print("]")
         input("Press Enter to continue")
+        print("\033[A                             \033[A")
+        # print("\r")
 
 
 def get_beeps():
@@ -165,7 +155,21 @@ def get_beeps():
     return silence + beep + beep + beep
 
 
-for sequence in generate_sequences(2, 2, 1, 9):
+def get_user_input():
+    myThread = MyThread()
+    myThread.start()
+    answer = input(myThread.get_prompt())
+    myThread.do_run = False
+    time.sleep(0.01)
+    print("\r")
+    return answer
+
+
+sequences = []
+for length in range(3, 13):
+    sequences.append(*generate_sequences(1, length, 1, 9))
+
+for sequence in sequences:
     text = ",".join(list(map(str, sequence)))
     tts = gTTS(text=text, lang="en", slow=False)
     mp3_fp = io.BytesIO()
@@ -175,19 +179,8 @@ for sequence in generate_sequences(2, 2, 1, 9):
     print("Listen to the sequence...")
     with stderr_redirected():
         play(song)
-    myThread = MyThread()
-    myThread.start()
-    try:
-        # answer = input_with_timeout(myThread.get_prompt(), 10)
-        answer = input(myThread.get_prompt())
-        myThread.do_run = False
-        time.sleep(0.01)
-        print("\r")
-    except TimeoutExpired:
-        myThread.do_run = False
-        print("\nSorry, time's up")
-        time.sleep(0.01)
-        input("Press Enter to continue")
-    else:
-        user_sequence = user_text_to_sequence(answer)
-        compare_sequences(sequence[::-1], user_sequence)
+
+    answer = get_user_input()
+
+    user_sequence = user_text_to_sequence(answer)
+    compare_sequences(sequence[::-1], user_sequence)
