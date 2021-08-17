@@ -1,10 +1,10 @@
+#!/usr/bin/env python3
 import io
 import os
 import time
 import readline
 import threading
 import random
-import select
 import sys
 from contextlib import contextmanager
 
@@ -99,9 +99,9 @@ def generate_sequences(number, length, min_num, max_num):
 
 
 def user_text_to_sequence(text):
-    text_sequence = answer.replace(" ", "").split(",")
+    # text_sequence = answer.replace(" ", "").split(",")
     sequence = []
-    for element in text_sequence:
+    for element in text:
         if element.isnumeric():
             sequence.append(int(element))
         else:
@@ -111,13 +111,15 @@ def user_text_to_sequence(text):
 
 def compare_sequences(orig, user):
     if orig == user:
-        print("Correct")
+        print(f"Correct digits: {len(orig)}/{len(orig)} ({len(orig)/len(orig) * 100:.0f}%)")
         input("Press Enter to continue")
         print("\033[A                             \033[A")
+        return len(orig), len(orig)
     else:
         max_len = max(len(orig), len(user))
         print(f"True: {orig}")
         print("User: [", end="")
+        num_correct = 0
         for i, number in enumerate(orig):
             if i < len(user):
                 user_number = user[i]
@@ -126,6 +128,7 @@ def compare_sequences(orig, user):
 
             if user_number == number:
                 print(number, end="")
+                num_correct += 1
             else:
                 print(bcolors.FAIL + str(user_number) + bcolors.ENDC, end="")
             if i < max_len - 1:
@@ -140,9 +143,11 @@ def compare_sequences(orig, user):
                 if i < len(user) - 1:
                     print(", ", end="")
         print("]")
+        print(f"Correct digits: {num_correct}/{len(orig)} ({num_correct/len(orig) * 100:.0f}%)")
         input("Press Enter to continue")
         print("\033[A                             \033[A")
         # print("\r")
+        return len(orig), num_correct
 
 
 def get_beeps():
@@ -166,8 +171,12 @@ def get_user_input():
 
 
 sequences = []
-for length in range(3, 13):
+for length in range(2):
+    length = random.randint(3, 13)
     sequences.append(*generate_sequences(1, length, 1, 9))
+
+total_length = 0
+total_correct = 0
 
 for sequence in sequences:
     text = ",".join(list(map(str, sequence)))
@@ -183,4 +192,11 @@ for sequence in sequences:
     answer = get_user_input()
 
     user_sequence = user_text_to_sequence(answer)
-    compare_sequences(sequence[::-1], user_sequence)
+    length, correct = compare_sequences(sequence[::-1], user_sequence)
+
+    total_length += length
+    total_correct += correct
+
+print("")
+print("Summary")
+print(f"Correct digits: {total_correct}/{total_length} ({total_correct/total_length * 100:.0f}%)")
