@@ -171,7 +171,7 @@ def get_user_input():
 
 
 sequences = []
-for length in range(2):
+for length in range(6):
     length = random.randint(3, 13)
     sequences.append(*generate_sequences(1, length, 1, 9))
 
