@@ -94,10 +94,10 @@ def stderr_redirected(to=os.devnull):
 
 
 def generate_sequences(number, length, min_num, max_num):
-    sequences = []
-    for _ in range(number):
-        sequences.append([random.randint(min_num, max_num) for _ in range(length)])
-    return sequences
+    return [
+        [random.randint(min_num, max_num) for _ in range(length)]
+        for _ in range(number)
+    ]
 
 
 def user_text_to_sequence(text):
@@ -113,15 +113,7 @@ def user_text_to_sequence(text):
 
 def compare_sequences(orig, user):
     if orig == user:
-        print(
-            (
-                f"Correct digits: {len(orig)}/{len(orig)} "
-                f"({len(orig)/len(orig) * 100:.0f}%)"
-            )
-        )
-        input("Press Enter to continue")
-        print("\033[A                             \033[A")
-        return len(orig), len(orig)
+        num_correct = len(orig)
     else:
         max_len = max(len(orig), len(user))
         print(f"True: {orig}")
@@ -150,16 +142,17 @@ def compare_sequences(orig, user):
                 if i < len(user) - 1:
                     print(", ", end="")
         print("]")
-        print(
-            (
-                f"Correct digits: {num_correct}/{len(orig)} "
-                f"({num_correct/len(orig) * 100:.0f}%)"
-            )
+
+    print(
+        (
+            f"Correct digits: {num_correct}/{len(orig)} "
+            f"({num_correct/len(orig) * 100:.0f}%)"
         )
-        input("Press Enter to continue")
-        print("\033[A                             \033[A")
-        # print("\r")
-        return len(orig), num_correct
+    )
+    input("Press Enter to continue")
+    print("\033[A                             \033[A")
+    # print("\r")
+    return len(orig), num_correct
 
 
 def get_beeps():
