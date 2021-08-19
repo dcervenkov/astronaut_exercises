@@ -31,6 +31,7 @@ class MyThread(threading.Thread):
         # Set the initial prompt
         self.prompt = "Input[0]: "
         self.do_run = True
+        self.valid = True
 
     def run(self):
         time.sleep(0.01)
@@ -46,6 +47,7 @@ class MyThread(threading.Thread):
                 str_i = bcolors.WARNING + str(i) + bcolors.ENDC
             if i > 9:
                 str_i = bcolors.FAIL + str(i) + bcolors.ENDC
+                self.valid = False
 
             self.set_prompt(f"Input[{str_i}]: ")
 
@@ -167,7 +169,7 @@ def get_user_input():
     myThread.do_run = False
     time.sleep(0.01)
     print("\r")
-    return answer
+    return answer, myThread.valid
 
 
 sequences = []
@@ -184,18 +186,19 @@ for sequence in sequences:
     mp3_fp = io.BytesIO()
     tts.write_to_fp(mp3_fp)
     mp3_fp.seek(0)
-    song = AudioSegment.from_file(mp3_fp, format="mp3")
+    speech = AudioSegment.from_file(mp3_fp, format="mp3")
     print("Listen to the sequence...")
     with stderr_redirected():
-        play(song)
+        play(speech)
 
-    answer = get_user_input()
+    answer, valid = get_user_input()
 
     user_sequence = user_text_to_sequence(answer)
     length, correct = compare_sequences(sequence[::-1], user_sequence)
 
     total_length += length
-    total_correct += correct
+    if valid:
+        total_correct += correct
 
 print("")
 print("Summary")

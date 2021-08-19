@@ -25,6 +25,7 @@ class MyThread(threading.Thread):
         self.text = text
         self.prompt = f"Solve[0]: {self.text} = "
         self.do_run = True
+        self.valid = True
 
     def run(self):
         time.sleep(0.01)
@@ -40,6 +41,7 @@ class MyThread(threading.Thread):
                 str_i = bcolors.WARNING + str(i) + bcolors.ENDC
             if i > 9:
                 str_i = bcolors.FAIL + str(i) + bcolors.ENDC
+                self.valid = False
 
             self.set_prompt(f"Solve[{str_i}]: {self.text} = ")
 
@@ -86,7 +88,7 @@ def get_user_input(text):
     myThread.do_run = False
     time.sleep(0.01)
     # print("\r")
-    return answer
+    return int(answer), myThread.valid
 
 
 def main():
@@ -102,15 +104,17 @@ def main():
     for _ in range(total):
         op_type = random.choice(("add", "sub", "mul", "div"))
         exercise, result = generate_exercise(op_type)
-        answer = int(get_user_input(exercise))
+        answer, valid = get_user_input(exercise)
 
         result_str = ""
         if answer == result:
-            correct += 1
             result_str += bcolors.OKGREEN
+            if valid:
+                correct += 1
         elif (abs(answer - result) / result) < margin:
-            close += 1
             result_str += bcolors.WARNING
+            if valid:
+                close += 1
         else:
             result_str += bcolors.FAIL
         result_str += str(result)
